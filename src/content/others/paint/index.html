@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Жидкая краска</title>
+
+        <meta name="description" content="Моделирование рисования жидкой краской">
+
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="paint.css">
+    </head>
+
+    <body>
+        <script type="text/template" id="main">
+            <div id="ui">
+                <div id="clear-button" class="button">Очистить</div><div id="save-button" class="button">Сохранить</div>
+
+                <div class="control-label">Качество</div>
+                <div class="buttons" id="qualities"></div>
+                <div style="clear:both"></div>
+
+                <div class="control-label">Цветовой режим</div>
+                <div class="buttons" id="models"></div>
+                <div style="clear:both"></div>
+
+                <div class="control-label">Текучесть краски</div>
+                <div id="fluidity-slider" class="slider"></div>
+
+                <div class="control-label">Число щетинок</div>
+                <div id="bristles-slider" class="slider"></div>
+
+                <div class="control-label">Размер кисти</div>
+                <div id="size-slider" class="slider"></div>
+
+                <div class="control-label">Цвет краски</div>
+
+                <div id="undo-button" class="button">Отменить</div><div id="redo-button" class="button">Повторить</div>
+            </div>
+
+
+            <div id="instructions">
+                <span>Щелкните и удерживайте</span>, чтобы рисовать<br/>
+                <span>Прокрутите </span>, чтобы изменить размер кисти<br/>
+                <span>Пробел + перетащите</span> для панорамирования<br/>
+                <span>Перетащите края</span>, чтобы изменить размер холста
+            </div>
+
+            <div id="footer">
+                <a href="http://david.li">Автор: david.li</a> | <a href="http://github.com/dli/paint">Source code</a>
+            </div>
+        </script>
+
+        <script type="text/template" id="no-support">
+            <div id="no-support-container">
+                <div id="error"></div>
+                <div id="backlink"><a href="http://david.li">Автор: david.li</a></div>
+            </div>
+        </script>
+
+        <div id="placeholder"></div>
+
+
+        <script src="wrappedgl.js"></script>
+        <script src="utilities.js"></script>
+        <script src="rectangle.js"></script>
+        <script src="brush.js"></script>
+        <script src="simulator.js"></script>
+        <script src="colorpicker.js"></script>
+        <script src="slider.js"></script>
+        <script src="buttons.js"></script>
+        <!--<script src="brushviewer.js"></script>-->
+        <script src="paint.js"></script>
+
+        <script>
+            'use strict';
+
+            var canvas = document.createElement('canvas');
+            var wgl = WrappedGL.create(canvas);
+
+            if (wgl !== null && wgl.hasFloatTextureSupport()) { //required features are supported
+                document.body.appendChild(canvas);
+                document.getElementById('placeholder').outerHTML = document.getElementById('main').innerHTML;
+                var painter = new Paint(canvas, wgl);
+            } else { //required features unsupported
+                document.getElementById('placeholder').outerHTML = document.getElementById('no-support').innerHTML;
+
+                if (wgl === null) {
+                    document.getElementById('error').innerHTML = 'К сожалению, Ваш браузер не поддерживает WebGL.';
+                } else {
+                    document.getElementById('error').innerHTML = 'К сожалению, Ваш браузер не поддерживает WebGL-текстуры c плавающей точкой.';
+                }
+            }
+        </script>
+
+    </body>
+</html>
