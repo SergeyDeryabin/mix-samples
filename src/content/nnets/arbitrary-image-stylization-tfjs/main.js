@@ -335,8 +335,8 @@ class Main {
     this.combineButton.disabled = false;
     this.modelSelectStyle.disabled = false;
     this.modelSelectTransformer.disabled = false;
-    this.styleButton.textContent = 'Stylize';
-    this.combineButton.textContent = 'Combine Styles';
+    this.styleButton.textContent = 'Стилизовать';
+    this.combineButton.textContent = 'Комбинировать стили';
   }
 
   disableStylizeButtons() {
@@ -348,13 +348,13 @@ class Main {
 
   async startStyling() {
     await tf.nextFrame();
-    this.styleButton.textContent = 'Generating 100D style representation';
+    this.styleButton.textContent = 'Генерация представления 100D стилей ';
     await tf.nextFrame();
     let bottleneck = await tf.tidy(() => {
       return this.styleNet.predict(tf.browser.fromPixels(this.styleImg).toFloat().div(tf.scalar(255)).expandDims());
     })
     if (this.styleRatio !== 1.0) {
-      this.styleButton.textContent = 'Generating 100D identity style representation';
+      this.styleButton.textContent = 'Генерация представления 100D  идентификационных данных стиля';
       await tf.nextFrame();
       const identityBottleneck = await tf.tidy(() => {
         return this.styleNet.predict(tf.browser.fromPixels(this.contentImg).toFloat().div(tf.scalar(255)).expandDims());
@@ -368,7 +368,7 @@ class Main {
       styleBottleneck.dispose();
       identityBottleneck.dispose();
     }
-    this.styleButton.textContent = 'Stylizing image...';
+    this.styleButton.textContent = 'Стилизация изображения...';
     await tf.nextFrame();
     const stylized = await tf.tidy(() => {
       return this.transformNet.predict([tf.browser.fromPixels(this.contentImg).toFloat().div(tf.scalar(255)).expandDims(), bottleneck]).squeeze();
@@ -380,19 +380,19 @@ class Main {
 
   async startCombining() {
     await tf.nextFrame();
-    this.combineButton.textContent = 'Generating 100D style representation of image 1';
+    this.combineButton.textContent = 'Генерация представления 100D стилей  изображения 1';
     await tf.nextFrame();
     const bottleneck1 = await tf.tidy(() => {
       return this.styleNet.predict(tf.browser.fromPixels(this.combStyleImg1).toFloat().div(tf.scalar(255)).expandDims());
     })
     
-    this.combineButton.textContent = 'Generating 100D style representation of image 2';
+    this.combineButton.textContent = 'Генерация представления 100D стилей  изображения 2';
     await tf.nextFrame();
     const bottleneck2 = await tf.tidy(() => {
       return this.styleNet.predict(tf.browser.fromPixels(this.combStyleImg2).toFloat().div(tf.scalar(255)).expandDims());
     });
 
-    this.combineButton.textContent = 'Stylizing image...';
+    this.combineButton.textContent = 'Стилизация изображения...';
     await tf.nextFrame();
     const combinedBottleneck = await tf.tidy(() => {
       const scaledBottleneck1 = bottleneck1.mul(tf.scalar(1-this.combStyleRatio));
