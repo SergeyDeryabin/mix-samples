@@ -297,162 +297,160 @@ limitations under the License.
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          What is this?
+          Что это?
         </h5>
         <p>
-          This is an implementation of an arbitrary style transfer algorithm
-          running purely in the browser using TensorFlow.js. As with all neural 
-          style transfer algorithms, a neural network attempts to "draw" one 
-          picture, the Content (usually a photograph), in the style of another, 
-          the Style (usually a painting). 
+          Это - реализация алгоритма передачи произвольного стиля(arbitrary style transfer),
+          выполняемая только в браузере, путем использования TensorFlow.js.
+          Как и все алгоритмы передачи стиля с помощью нейронных сетей,
+          нейронная сеть пытается изображение содержания(контент; Content; 
+          обычно фотография) "нарисовать" в стиле другого изображения стиля
+          (стиль; Style; painting; обычно живопись/картина). 
         </p>
         <p>
-          Although <a href="https://github.com/reiinakano/fast-style-transfer-deeplearnjs">other browser implementations</a> of style transfer exist,
-          they are normally limited to a pre-selected handful of styles, due to
-          the requirement that a separate neural network must be trained for each
-          style image.
+          Несмотря на то, что <a href="https://github.com/reiinakano/fast-style-transfer-deeplearnjs"> другие браузер-реализации</a> 
+          алгоритма передачи стиля существуют, но они обычно ограничиваются 
+          предварительно выбранным небольшим количеством стилей, из-за
+          требования, чтобы отдельная нейронная сеть должна быть обучена для каждого
+          изображения стиля.
         </p>
         <p>
-          Arbitrary style transfer works around this limitation by using a
-          separate <i>style network</i> that learns to break down <i>any</i> image into 
-          a 100-dimensional vector representing its style. This style vector is 
-          then fed into another network, the <i>transformer network</i>, along
-          with the content image, to produce the final stylized image.
+          Передача произвольного стиля(arbitrary style transfer) работает вокруг этого ограничения, используя 
+          отдельную <i> сеть стиля(style network)</i>, которая обучается разбивать<i> любое(any)</i> изображение на 
+          100-мерный вектор(100-dimensional vector), представляющий его стиль. Этот вектор стиля(style vector) 
+          затем поставляется в другую сеть, <i> сеть преобразователя(transformer network) </i>, вместе с
+          с изображением содержания, чтобы произвести финальное стилизованное изображение содержания.
         </p>
         <p>
-          I have written a <a href="https://magenta.tensorflow.org/blog/2018/12/20/style-transfer-js/">blog post</a> 
-          explaining this project in more detail.
+          Я написал <a href="https://magenta.tensorflow.org/blog/2018/12/20/style-transfer-js/">сообщение в блоге, </a> 
+          более подробно объясняющее этот проект.
         </p>
     </div>
   </div>
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          Is my data safe? Can you see my pictures?
+          Действительно ли мои данные безопасны? Можете ли вы увидеть мои картины?
         </h5>
         <p>
-          Your data and pictures here never leave your computer! In fact,
-          this is one of the main advantages of running neural networks 
-          in your browser. Instead of sending us your data, we send *you* 
-          both the model *and* the code to run the model. These are then 
-          run by your browser.
+          Ваши данные и картины никогда не покидают Ваш компьютер! Фактически,
+          это является одним из основных преимуществ выполнения нейронных сетей 
+          в Вашем браузере. Вместо того, чтобы забирать на сервер Ваши данные, мы отправляем *Вам*(*you*)
+          и модель(model) *и* код(code) выполнения модели. Затем они
+          выполняются в Вашем браузере.
         </p>
     </div>
   </div>
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          What are all these different models?
+          Каковы все эти различные модели?
         </h5>
         <p>
-          The original paper uses an Inception-v3 model 
-          as the style network, which takes up ~36.3MB 
-          when ported to the browser as a FrozenModel.
+          Исходный документ стандарта использует исходную модель Inception-v3 
+          в качестве сети стиля(style network), занимающую ~36.3MB, 
+          когда она портирована для браузера в виде рабочей модели FrozenModel.
         </p>
         <p>
-          In order to make this model smaller, a MobileNet-v2 was
-          used to distill the knowledge from the pretrained Inception-v3 
-          style network. This resulted in a size reduction of just under 4x,
-          from ~36.3MB to ~9.6MB, at the expense of some quality.
+          Чтобы сделать эту рабочую модель меньшим размером, была
+          использована модель MobileNet-v2, чтобы дистиллировать знание из предварительно обученной 
+          модели Inception-v3 сети стиля. Это привело к сокращению размера рабочей модели почти в 4 раза,
+          с ~36.3MB до ~9.6MB, за счет потери некоторого качества.
         </p>
         <p>
-          For the transformer network, the original paper uses 
-          a model using plain convolution layers. When ported to
-          the browser, this model takes up 7.9MB and is responsible
-          for the majority of the calculations during stylization.
+          Для сети преобразователя(transformer network), исходный документ стандарта 
+          использует исходную модель, используя простые слои свертки(plain convolution layers).
+          Когда она портирована для браузера в виде рабочей модели,
+          то эта модель занимает 7.9 МБ и она ответственна
+          за большинство вычислений во время стилизации.
         </p>
         <p>
-          In order to make the transformer model more efficient, most of the
-          plain convolution layers were replaced with depthwise separable 
-          convolutions. This reduced the model size to 2.4MB, while
-          drastically improving the speed of stylization.
+          Чтобы сделать модель сети преобразователя(transformer network) более эффективной,
+          большая часть простых слоев свертки(plain convolution layers) была заменена 
+          отделимыми сверткам с благоразумной глубиной(depthwise separable convolutions). 
+          Это уменьшило размер рабочей модели до 2.4 МБ, при решительном улучшении скорости стилизации.
         </p>
         <p>
-          This demo lets you use any combination of the models, defaulting
-          to the MobileNet-v2 style network and the separable convolution
-          transformer network.
+          Этот демонстрационный пример позволяет Вам использовать любую комбинацию моделей,
+          принимая в качестве значения по умолчанию модель MobileNet-v2  сети стиля(style network) 
+          и  сеть преобразователя(transformer network) с отделимыми свертками(separable convolutions).
         </p>
     </div>
   </div>
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          How big are the models I'm downloading?
+          Насколько велики загружаемые мной модели?
         </h5>
         <p>
-          The distilled style network is ~9.6MB, while the separable convolution
-          transformer network is ~2.4MB,
-          for a total of ~12MB. Since these models work for any style, you only 
-          have to download them once!
+          Дистиллированная сеть стиля - ~9.6MB,в то время как сеть преобразователя  
+          с отделимыми свертками - ~2.4MB, что в общей сложности ~12MB. 
+          Так как эти модели работают с любым стилем, то Вам требуется загрузить их только один раз!
         </p>
     </div>
   </div>
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          How does style combination work?
+         Как работает комбинация(объединение) стиля?
         </h5>
         <p>
-          Since each style can be mapped to a 100-dimensional 
-          style vector by the style network,
-          we simply take a weighted average of the two to get
-          a new style vector for the transformer network.
+          Так как каждый стиль может быть сетью стиля отображен на 100-мерном векторе стиля,
+          то  мы просто берем взвешенное среднее двух, чтобы получить
+          вектор стиля для сети преобразователя.
         </p>
         <p>
-          This is also how we are able to control the strength
-          of stylization. We take a weighted average of the style 
-          vectors of <i>both</i> content and style images and use 
-          it as input to the transformer network.
+          Также, мы способны управлять силой стилизации. Мы берем взвешенное среднее
+          векторов стиля <i> и </i> изображения содержания и изображения стиля, и используем 
+          их в качестве ввода у сети преобразователя.
         </p>
     </div>
   </div>
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          Is the code open source?
+          Действительно ли код является кодом с открытым исходником?
         </h5>
         <p>
-            Yup! The code is <a href="https://github.com/reiinakano/arbitrary-image-stylization-tfjs">hosted on Github</a>.
+            Да! Код <a href="https://github.com/reiinakano/arbitrary-image-stylization-tfjs">размещен на Github</a>.
         </p>
     </div>
   </div>
   <div class="row pt-5">
     <div class="col-md-4 offset-md-4">
         <h5>
-          Credits
-        </h5>
+         Уважение:        </h5>
         <p>
-          This demo was put together by <a href="https://github.com/reiinakano">Reiichiro Nakano</a>
-          but could not have been done without the following:
+          Этот демонстрационный пример был разработан <a href="https://github.com/reiinakano">Reiichiro Nakano</a>
+          но, возможно, не был бы сделан без следующих авторов:
         </p>
         <ul>
           <li>
-            Authors of the
-            <a href="https://arxiv.org/abs/1705.06830">arbitrary style transfer</a> paper.
+            Авторы документа стандарта
+            <a href="https://arxiv.org/abs/1705.06830">передачи произвольного стиля(arbitrary style transfer)</a>.
           </li>
           <li>
-            The Magenta repository for <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/arbitrary_image_stylization">arbitrary style transfer</a>.
+            Magenta-репозитарий для <a href="https://github.com/tensorflow/magenta/tree/master/magenta/models/arbitrary_image_stylization">передачи произвольного стиля(arbitrary style transfer)</a>.
           </li>
           <li>
-            Authors of <a href="https://arxiv.org/abs/1801.04381">the MobileNet-v2 paper</a>.
+            Авторы документа стандарта <a href="https://arxiv.org/abs/1801.04381"> модели нейросети для мобильных устройств MobileNet-v2</a>.
           </li>
           <li>
-            Authors of the paper describing <a href="https://arxiv.org/abs/1503.02531">neural network knowledge distillation</a>.
+            Авторы документа стандарта, описывающего <a href="https://arxiv.org/abs/1503.02531">дистилляцию знаний нейронной сети(neural network knowledge distillation)</a>.
           </li>
           <li>
-            The <a href="https://js.tensorflow.org">TensorFlow.js library</a>.
+            JavaScript-библиотека <a href="https://js.tensorflow.org">TensorFlow.js</a>.
           </li>
           <li>
-            <a href="https://colab.research.google.com/">Google Colaboratory</a>, 
-            with which I was able to do all necessary training using a free(!) GPU.
+            <a href="https://colab.research.google.com/">Сотрудничество с Google Colaboratory</a>, 
+            с которой я смог сделать все необходимое обучение, используя свободные графические карры(!) GPU.
           </li>
         </ul>
         <p>
-            As a final note, I'd love to hear from people interested 
-            in making a suite of tools for artistically manipulating images, kind of like 
-            <a href="https://magenta.tensorflow.org/studio">Magenta Studio</a>
-            but for images. Please reach out if you're planning to build/are 
-            building one out!
+            В заключение, я хотел бы получить известие от заинтересованных людей в создании 
+            набора люкс инструментов для мастерского манипулирования изображениями, отчасти подобного продукту
+           	<a href="https://magenta.tensorflow.org/studio">Magenta Studio</a>, но для изображений. Пожалуйста информируйте, 
+           	если Вы планируете создать/выпустить!
         </p>
     </div>
   </div>
