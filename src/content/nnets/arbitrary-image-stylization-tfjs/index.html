@@ -78,7 +78,7 @@ limitations under the License.
       <div class="container">
         <div class="row my-4">
           <div class="col mx-5 my-4">
-              <img id="content-img" class="centered" src="images/chicago.jpg" height=256></img>
+              <img id="content-img" class="centered" src="images/diana.jpg" height=256></img>
               <br>
               <label for="content-img-size">Размер изображения содержания</label>
               <i class="far fa-question-circle" data-toggle="tooltip" data-placement="top" 
@@ -90,10 +90,10 @@ limitations under the License.
                 <option value="pic">Сделайте снимок</option>
                 <option value="file">Выберите из файла</option>
                 <option value="stata">штамп</option>
-                <option value="diana">Диана</option>
+                <option value="diana" selected="selected">Диана</option>
                 <option value="golden_gate">Золотые ворота</option>
                 <option value="beach">пляж</option>
-                <option value="chicago" selected="selected">Чикаго</option>
+                <option value="chicago">Чикаго</option>
                 <option value="statue_of_liberty">Статуя свободы</option>
               </select>
           </div>
@@ -205,7 +205,7 @@ limitations under the License.
       </div>
       <div class="row my-4">
         <div class="col-md-6 offset-md-3">
-            <img id="c-content-img" class="centered" src="images/statue_of_liberty.jpg" height=256></img>
+            <img id="c-content-img" class="centered" src="images/diana.jpg" height=256></img>
             <br>
             <label for="c-content-img-size">Размер изображения содержания</label>
             <i class="far fa-question-circle" data-toggle="tooltip" data-placement="top" 
@@ -217,11 +217,11 @@ limitations under the License.
               <option value="pic">Сделайте снимок</option>
               <option value="file">Выберите из файла</option>
               <option value="stata">штамп</option>
-              <option value="diana">Диана</option>
+              <option value="diana" selected="selected">Диана</option>
               <option value="golden_gate">Золотые ворота</option>
               <option value="beach">пляж</option>
               <option value="chicago">Чикаго</option>
-              <option value="statue_of_liberty" selected="selected">Статуя свободы</option>
+              <option value="statue_of_liberty">Статуя свободы</option>
             </select>
         </div>
       </div>
@@ -301,7 +301,7 @@ limitations under the License.
         </h5>
         <p>
           Это - реализация алгоритма передачи произвольного стиля(arbitrary style transfer),
-          выполняемая только в браузере, путем использования TensorFlow.js.
+          выполняемая только в браузере, путем использования JavaScript-библиотеки TensorFlow.js.
           Как и все алгоритмы передачи стиля с помощью нейронных сетей,
           нейронная сеть пытается изображение содержания(контент; Content; 
           обычно фотография) "нарисовать" в стиле другого изображения стиля
@@ -443,7 +443,7 @@ limitations under the License.
           </li>
           <li>
             <a href="https://colab.research.google.com/">Сотрудничество с Google Colaboratory</a>, 
-            с которой я смог сделать все необходимое обучение, используя свободные графические карры(!) GPU.
+            с которой я смог сделать все необходимое обучение, используя свободные графические процессоры(ГПУ; GPU).
           </li>
         </ul>
         <p>
