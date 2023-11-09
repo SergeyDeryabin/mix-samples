@@ -1,0 +1,202 @@
+<html>
+    <head>
+         <meta charset="UTF-8">
+		<title>Face Touch Detection with TensorFlow.js Part 1: Using Real-Time Webcam Data with Deep Learning</title>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-data@2.0.0/dist/tf-data.min.js"></script>
+        <style>
+            img, video {
+                object-fit: cover;
+            }
+        </style>
+    </head>
+    <body>
+        <video autoplay playsinline muted id="webcam"
+				width="224" height="224"></video>
+        <button onclick="captureSample(0)">Касание/Touch</button>
+        <button onclick="captureSample(1)">Нет касания/No Touch</button>
+        <button onclick="trainModel()">Обучить(тренировать)/Train</button>
+        <h1 id="status">Загрузка.../Loading...</h1>
+        <script>
+        let touch = [];
+        let notouch = [];
+
+        const labels = [
+            "Касание/Touch!",
+            "Нет касания/No Touch"
+        ];
+
+        function setText( text ) {
+            document.getElementById( "status" ).innerText = text;
+        }
+
+        async function predictImage() {
+            if( !hasTrained ) { return; } // Пропустите прогноз,
+			// пока не обучена
+			// Skip prediction until trained
+            const img = await getWebcamImage();
+            let result = tf.tidy( () => {
+                const input = img.reshape( [ 1, 224, 224, 3 ] );
+                return model.predict( input );
+            });
+            img.dispose();
+            let prediction = await result.data();
+            result.dispose();
+            // Получите индекс самого высокого значения в прогнозе
+			// Get the index of the highest value in the prediction
+            let id = prediction.indexOf( Math.max( ...prediction ) );
+            setText( labels[ id ] );
+        }
+
+        function createTransferModel( model ) {
+           // Создайте усеченную базовую модель(удалите "верхние" слои,
+		 	// классификация + слои узкого места)
+			// Create the truncated base model (remove the "top" layers,
+			// classification + bottleneck layers)
+			// const bottleneck = model.getLayer( "conv_pw_13_relu" );
+			// Intercepting at the convolution layer
+			// might give better results
+            const bottleneck = model.getLayer( "dropout" ); // Это -
+			// финальный уровень, перед слоем conv_pred,
+			// предварительно обученным слоем классификации
+			// This is the final layer before
+			// the conv_pred pre-trained classification layer
+            const baseModel = tf.model({
+                inputs: model.inputs,
+                outputs: bottleneck.output
+            });
+             // Заморозьте сверточную базу
+			// Freeze the convolutional base
+            for( const layer of baseModel.layers ) {
+                layer.trainable = false;
+            }
+            // Добавьте голову классификации
+			// Add a classification head
+            const newHead = tf.sequential();
+            newHead.add( tf.layers.flatten( {
+                inputShape: baseModel.outputs[ 0 ].shape.slice( 1 )
+            } ) );
+            newHead.add( tf.layers.dense( {
+				units: 100, activation: 'relu' } ) );
+            newHead.add( tf.layers.dense( {
+				units: 100, activation: 'relu' } ) );
+            newHead.add( tf.layers.dense( {
+				units: 10, activation: 'relu' } ) );
+            newHead.add( tf.layers.dense( {
+                units: 2,
+                kernelInitializer: 'varianceScaling',
+                useBias: false,
+                activation: 'softmax'
+            } ) );
+            // Постройте новую модель
+			// Build the new model
+            const newOutput = newHead.apply( baseModel.outputs[ 0 ] );
+            const newModel = tf.model( 
+					{ inputs: baseModel.inputs, outputs: newOutput } );
+            return newModel;
+        }
+
+        async function trainModel() {
+            hasTrained = false;
+            setText( "Обучение.../Training..." );
+
+            // Установите данные обучения(тренировки)
+			// Setup training data
+            const imageSamples = [];
+            const targetSamples = [];
+            for( let i = 0; i < touch.length; i++ ) {
+                let result = touch[ i ];
+                imageSamples.push( result );
+                targetSamples.push( tf.tensor1d( [ 1, 0 ] ) );
+            }
+            for( let i = 0; i < notouch.length; i++ ) {
+                let result = notouch[ i ];
+                imageSamples.push( result );
+                targetSamples.push( tf.tensor1d( [ 0, 1 ] ) );
+            }
+            const xs = tf.stack( imageSamples );
+            const ys = tf.stack( targetSamples );
+
+            // Обучите модель на новых выборках примерах изображений
+			// Train the model on new image samples
+            model.compile( { loss: "meanSquaredError",
+			 optimizer: "adam", metrics: [ "acc" ] } );
+
+            await model.fit( xs, ys, {
+                epochs: 30,
+                shuffle: true,
+                callbacks: {
+                    onEpochEnd: ( epoch, logs ) => {
+                        console.log( "Эпоха # / Epoch #", epoch, logs );
+                    }
+                }
+            });
+            hasTrained = true;
+        }
+
+        // Модель Mobilenet v1 0.25 для изображений размером 224x224
+		// Mobilenet v1 0.25 224x224 model
+        const mobilenet = "https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json";
+
+        let model = null;
+        let hasTrained = false;
+
+        async function setupWebcam() {
+            return new Promise( ( resolve, reject ) => {
+                const webcamElement = document.getElementById( "webcam" );
+                const navigatorAny = navigator;
+                navigator.getUserMedia = navigator.getUserMedia ||
+                navigatorAny.webkitGetUserMedia || 
+				navigatorAny.mozGetUserMedia ||
+                navigatorAny.msGetUserMedia;
+                if( navigator.getUserMedia ) {
+                    navigator.getUserMedia( { video: true },
+                        stream => {
+                            webcamElement.srcObject = stream;
+                            webcamElement.addEventListener( 
+								"loadeddata", resolve, false );
+                        },
+                    error => reject());
+                }
+                else {
+                    reject();
+                }
+            });
+        }
+
+        async function getWebcamImage() {
+            const img = ( await webcam.capture() ).toFloat();
+            const normalized = img.div( 127 ).sub( 1 );
+            return normalized;
+        }
+
+        async function captureSample( category ) {
+            if( category === 0 ) {
+                touch.push( await getWebcamImage() );
+                setText( "Захвачены:/Captured: " + 
+					labels[ category ] + " x" + touch.length );
+            }
+            else {
+                notouch.push( await getWebcamImage() );
+                setText( "Захвачены:/Captured: " + 
+					labels[ category ] + " x" + notouch.length );
+            }
+        }
+
+        let webcam = null;
+
+        (async () => {
+            // Загрузите модель
+			// Load the model
+            model = await tf.loadLayersModel( mobilenet );
+            model = createTransferModel( model );
+            await setupWebcam();
+            webcam = await tf.data.webcam( 
+						document.getElementById( "webcam" ) );
+            // Прогноз установки каждые 200 мс
+			// Setup prediction every 200 ms
+            setInterval( predictImage, 200 );
+        })();
+        </script>
+    </body>
+</html>
