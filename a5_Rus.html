@@ -14,7 +14,7 @@
         <video autoplay playsinline muted id="webcam"
 						width="224" height="224"></video>
         <canvas id="canvas" width="224" height="224"></canvas>
-        <h1 id="status">Loading...</h1>
+        <h1 id="status">Загрузка.../Loading...</h1>
         <script>
         async function setupWebcam() {
             return new Promise( ( resolve, reject ) => {
@@ -68,8 +68,8 @@
 					Math.pow( nose.y - earR.y, 2 ) );
                 const faceRadius = Math.max( earLtoNose, earRtoNose );
 
-                // Проверка того, что любой из пикселей  
-			   // левой руки left_hand(10) или левой руки right_hand (11)
+               // Проверка того, что любой из пикселей  
+			   // левой руки left_hand(10) или правой руки right_hand (11)
 			   // находится внутри круга faceRadius у носа 
 			   // Check if any of the left_hand(10) or right_hand(11)
 			   // pixels are within the nose to faceRadius
