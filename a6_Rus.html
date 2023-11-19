@@ -23,7 +23,7 @@
             <button onclick="captureSample(7)">🤟 (Я люблю Вас/ILY - I Love You)</button>
             <button onclick="trainModel()">Обучить(тренировать)/Train</button>
         </div>
-        <h1 id="status">Loading...</h1>
+        <h1 id="status">Загрузка.../Loading...</h1>
         <script>
         let trainingData = [];
 
@@ -114,7 +114,7 @@
                 shuffle: true,
                 callbacks: {
                     onEpochEnd: ( epoch, logs ) => {
-                        console.log( "Epoch #", epoch, logs );
+                        console.log(  "Эпоха #/Epoch #", epoch, logs );
                     }
                 }
             });
@@ -159,7 +159,7 @@
                 image: await getWebcamImage(),
                 category: category
             });
-            setText( "Captured: " + labels[ category ] );
+            setText( "Захвачено:/Captured: " + labels[ category ] );
         }
 
         let webcam = null;
