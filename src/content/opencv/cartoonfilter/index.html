@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мультяшное изображение</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+   <div>
+  <label>Мультяшное изображение</label>
+   </div>
+   
+     <div class="btns">    
+    <a href="https://morioh.com/a/c12187f5b993/create-a-cartoon-filter-for-images-with-opencv-and-javascript">Исходная статья: Создайте мультипликационный фильтр для изображений с помощью OpenCV и JavaScript(Create a Cartoon Filter for Images with OpenCV and JavaScript)</a>
+    
+    <a href="http://dsm1955.narod.ru/My_read_books/README_tools.html">Список прочитанных(переведенных) книг по библиотеке компьютерного зрения: OpenCV (англ. Open Source Computer Vision Library, библиотека компьютерного зрения с открытым исходным кодом) — библиотека алгоритмов компьютерного зрения, обработки изображений и численных алгоритмов общего назначения с открытым кодом.</a>
+      </div>
+     
+      
+    <div class="container">
+      <input type="file" id="file" accept="image/*" />
+      <label for="file"> Выберите фото </label>
+    </div>
+    <div id="post-upload-container" class="hide">
+      <div class="image-container">
+        <img id="image" crossorigin="anonymous" />
+        <canvas id="output-canvas"></canvas>
+      </div>
+      <div class="btns">
+        <button id="preview">Предварительный просмотр</button>
+        <a href="" id="download" class="hide">Загрузить</a>
+      </div>
+    </div>
+    
+   
+  
+    <script src="./script.js"></script>
+    <script src="opencv.js" onload="openCvReady()"></script>
+    
+   
+  </body>
+</html>
