@@ -1,71 +1,54 @@
 <html>
     <head>
     	<meta charset="UTF-8">
-        <title>Выполнение - Обнаружение эмоций на лице в браузере с помощью глубокого обучения с использованием библиотеки TensorFlow.js</title>
+        <title>Обнаружение эмоций на лице в реальном времени с помощью веб-камеры в браузере с использованием библиотеки TensorFlow.js</title>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.4.0/dist/tf.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.js"></script>
-        <script src="web/fer2013.js"></script>
     </head>
     <body>
         <canvas id="output"></canvas>
-        <img id="image" style="
+        <video id="webcam" playsinline style="
             visibility: hidden;
             width: auto;
             height: auto;
-            "/>
+            ">
+        </video>
         <h1 id="status">Загрузка...</h1>
         <script>
         function setText( text ) {
             document.getElementById( "status" ).innerText = text;
         }
 
-        async function setImage( url ) {
-            return new Promise( res => {
-                let image = document.getElementById( "image" );
-                image.src = url;
-                image.onload = () => {
-                    res();
-                };
+        function drawLine( ctx, x1, y1, x2, y2 ) {
+            ctx.beginPath();
+            ctx.moveTo( x1, y1 );
+            ctx.lineTo( x2, y2 );
+            ctx.stroke();
+        }
+
+        async function setupWebcam() {
+            return new Promise( ( resolve, reject ) => {
+                const webcamElement = document.getElementById( "webcam" );
+                const navigatorAny = navigator;
+                navigator.getUserMedia = navigator.getUserMedia ||
+                navigatorAny.webkitGetUserMedia || navigatorAny.mozGetUserMedia ||
+                navigatorAny.msGetUserMedia;
+                if( navigator.getUserMedia ) {
+                    navigator.getUserMedia( { video: true },
+                        stream => {
+                            webcamElement.srcObject = stream;
+                            webcamElement.addEventListener( "loadeddata", resolve, false );
+                        },
+                    error => reject());
+                }
+                else {
+                    reject();
+                }
             });
         }
-
-        function shuffleArray( array ) {
-            for( let i = array.length - 1; i > 0; i-- ) {
-                const j = Math.floor( Math.random() * ( i + 1 ) );
-                [ array[ i ], array[ j ] ] = [ array[ j ], array[ i ] ];
-            }
-        }
-
-        function drawLine( ctx, x1, y1, x2, y2, scale = 1 ) {
-            ctx.beginPath();
-            ctx.moveTo( x1 * scale, y1 * scale );
-            ctx.lineTo( x2 * scale, y2 * scale );
-            ctx.stroke();
-        }
-
-        function drawTriangle( ctx, x1, y1, x2, y2, x3, y3, scale = 1 ) {
-            ctx.beginPath();
-            ctx.moveTo( x1 * scale, y1 * scale );
-            ctx.lineTo( x2 * scale, y2 * scale );
-            ctx.lineTo( x3 * scale, y3 * scale );
-            ctx.lineTo( x1 * scale, y1 * scale );
-            ctx.stroke();
-        }
-
-        function wait( ms ) {
-            return new Promise( res => setTimeout( res, ms ) );
-        }
-
-        const OUTPUT_SIZE = 500;
-        
-        // 					["сердитый", "отвращение", "страх", "счастливый",
-		// 					"нейтральный", "печальный", "удивление"];
-		// const emotions = [ "angry", "disgust", "fear",
-		// 					"happy", "neutral", "sad", "surprise" ];
-        
-        const emotions = [ "сердитый(angry)", "отвращение(disgust)", "страх(fear)", "счастливый(happy)", "нейтральный(neutral)", "печальный(sad)", "удивление(surprise)" ];
-        let ferData = [];
-        let setIndex = 0;
+		// 				["сердитый", "отвращение", "страх", "счастливый",
+		// 				"нейтральный", "печальный", "удивление"]; 
+        const emotions = [ "angry", "disgust", "fear", "happy", "neutral", "sad", "surprise" ];
         let emotionModel = null;
 
         let output = null;
@@ -85,37 +68,32 @@
         }
 
         async function trackFace() {
-            // Установить следующее изображение для обучения(тренировки)
-    		// Set to the next training image
-            await setImage( ferData[ setIndex ].file );
-            const image = document.getElementById( "image" );
+            const video = document.querySelector( "video" );
             const faces = await model.estimateFaces( {
-                input: image,
+                input: video,
                 returnTensors: false,
                 flipHorizontal: false,
             });
             output.drawImage(
-                image,
-                0, 0, image.width, image.height,
-                0, 0, OUTPUT_SIZE, OUTPUT_SIZE
+                video,
+                0, 0, video.width, video.height,
+                0, 0, video.width, video.height
             );
-
-            const scale = OUTPUT_SIZE / image.width;
 
             let points = null;
             faces.forEach( face => {
-                // Рисуем мешь лица
-    			// Draw the face mesh
+                // Чертим ограничивающий прямоугольник
+                // Draw the bounding box
                 const x1 = face.boundingBox.topLeft[ 0 ];
                 const y1 = face.boundingBox.topLeft[ 1 ];
                 const x2 = face.boundingBox.bottomRight[ 0 ];
                 const y2 = face.boundingBox.bottomRight[ 1 ];
                 const bWidth = x2 - x1;
                 const bHeight = y2 - y1;
-                drawLine( output, x1, y1, x2, y1, scale );
-                drawLine( output, x2, y1, x2, y2, scale );
-                drawLine( output, x1, y2, x2, y2, scale );
-                drawLine( output, x1, y1, x1, y2, scale );
+                drawLine( output, x1, y1, x2, y1 );
+                drawLine( output, x2, y1, x2, y2 );
+                drawLine( output, x1, y2, x2, y2 );
+                drawLine( output, x1, y1, x1, y2 );
 
                 // Добавьте только нос, щеки, глаза, брови и рот
     			// Add just the nose, cheeks, eyes, eyebrows & mouth
@@ -140,11 +118,10 @@
             });
 
             if( points ) {
-                let emotion = await predictEmotion( points );
-                 
-               // setText( `${setIndex + 1}. Ожидаемо: ${ferData[ setIndex ].emotion} vs. ${emotion}` );
-               
-               let cur_emotion = ferData[ setIndex ].emotion
+                let emotion = await predictEmotion( points ); 
+                // setText( `${setIndex + 1}. Ожидаемо: ${ferData[ setIndex ].emotion} vs. ${emotion}` );
+                //  setText( `Обнаружено: ${emotion}` );
+               let cur_emotion = emotion
                let rus_eng_cur_emotion = cur_emotion
                		 if ( cur_emotion == "angry" ) {  rus_eng_cur_emotion = "сердитый(angry)" }
                	else if ( cur_emotion == "disgust" ) {  rus_eng_cur_emotion = "отвращение(disgust)" }
@@ -154,51 +131,32 @@
               	else if ( cur_emotion == "sad" ) {  rus_eng_cur_emotion = "печальный(sad)" }
                 else if ( cur_emotion == "surprise" ) {  rus_eng_cur_emotion = "удивление(surprise)" }
                    
-                 setText( `${setIndex + 1}. Ожидаемо: ${rus_eng_cur_emotion} vs. ${emotion}` );
-                
-                
+                 setText( `Обнаружено: ${rus_eng_cur_emotion}` );
+             
             }
             else {
                 setText( "Не лицо" );
             }
 
-            setIndex++;
-            await wait( 2000 );
             requestAnimationFrame( trackFace );
         }
 
         (async () => {
-            // Получите FER-2013-данные с локального веб-сервера
-     		// https://www.kaggle.com/msambare/fer2013
-     		// Данные могут быть загружены с Kaggle и
-     		// помещены в каталог "web/fer2013"
-     		// Получите самое малое число примеров
-     		// всех категорий эмоций
-     		// Get FER-2013 data from the local web server
-     		// https://www.kaggle.com/msambare/fer2013
-     		// The data can be downloaded from Kaggle and
-     		// placed inside the "web/fer2013" folder
-     		// Get the lowest number of samples out
-     		// of all emotion categories
-            const minSamples = Math.min( ...Object.keys( fer2013 ).map( em => fer2013[ em ].length ) );
-            Object.keys( fer2013 ).forEach( em => {
-                shuffleArray( fer2013[ em ] );
-                for( let i = 0; i < minSamples; i++ ) {
-                    ferData.push({
-                        emotion: em,
-                        file: fer2013[ em ][ i ]
-                    });
-                }
-            });
-            shuffleArray( ferData );
+            await setupWebcam();
+            const video = document.getElementById( "webcam" );
+            video.play();
+            let videoWidth = video.videoWidth;
+            let videoHeight = video.videoHeight;
+            video.width = videoWidth;
+            video.height = videoHeight;
 
             let canvas = document.getElementById( "output" );
-            canvas.width = OUTPUT_SIZE;
-            canvas.height = OUTPUT_SIZE;
+            canvas.width = video.width;
+            canvas.height = video.height;
 
             output = canvas.getContext( "2d" );
             output.translate( canvas.width, 0 );
-            output.scale( -1, 1 ); // Mirror cam
+            output.scale( -1, 1 ); // Зеркалируем
             output.fillStyle = "#fdffb6";
             output.strokeStyle = "#fdffb6";
             output.lineWidth = 2;
