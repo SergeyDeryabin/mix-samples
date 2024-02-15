@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Калейдоскоп цветов. Автор Louis Hoebregts. Щелкните где-нибудь</title>
+<meta charset="UTF-8">
+<style type="text/css">
+  body{margin:0;overflow:hidden;}
+  </style>
+
+</head>
+<body>
+<!-- Калейдоскоп цветов. Автор Louis Hoebregts. Щелкните где-нибудь для генерации сцены -->
+<canvas></canvas>
+</body>
+
+<script>
+
+var canvas = document.querySelector("canvas"),
+  ctx = canvas.getContext("2d");
+var ww = canvas.width = window.innerWidth,
+  wh = canvas.height = window.innerHeight;
+
+var pearls = [];
+var amount = 20;
+
+function init() {
+  for (var i = 0; i < amount; i++) {
+    pearls.push(new Pearl());
+  }
+
+  requestAnimationFrame(render);
+}
+
+function Pearl() {
+  this.x = (Math.random() - 0.5) * ww;
+  this.y = Math.random() * wh;
+  this.radius = Math.random() * (ww / 6) + 20;
+  this.speed = Math.random() / 2000 + 0.0002;
+  this.source = Math.floor(Math.random() * 6);
+  this.direction = Math.random() > 0.5 ? 1 : -1;
+  this.rotation = Math.PI * 2 * Math.random();
+  this.rotateSpeed = (Math.random() - 0.5) / 60;
+}
+
+Pearl.prototype.draw = function(a) {
+
+  this.rotation += this.rotateSpeed;
+
+  ctx.save();
+  ctx.translate(ww / 2, wh / 2);
+  ctx.rotate(this.rotation);
+  ctx.translate(this.x,0);
+  ctx.beginPath();
+  ctx.rotate(-Math.PI / 2);
+  ctx.arc(0, 0, this.radius, 0, Math.PI);
+  ctx.clip();
+  ctx.rotate(a * this.speed * this.direction);
+  ctx.drawImage(flowers[this.source], -this.radius, -this.radius, this.radius * 2, this.radius * 2);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(ww / 2, wh / 2);
+  ctx.rotate(this.rotation);
+  ctx.translate(this.x,0);
+  ctx.beginPath();
+  ctx.rotate(Math.PI / 2);
+  ctx.arc(0, 0, this.radius, 0, Math.PI);
+  ctx.clip();
+  ctx.rotate(-a * this.speed * this.direction);
+  ctx.scale(-1, 1);
+  ctx.drawImage(flowers[this.source], -this.radius, -this.radius, this.radius * 2, this.radius * 2);
+  ctx.restore();
+
+}
+
+function render(a) {
+  requestAnimationFrame(render);
+  for (var i = 0; i < amount; i++) {
+    pearls[i].draw(a);
+  }
+}
+
+var loaded = 0;
+
+function loaderCheck() {
+  loaded++;
+  if (loaded === flowers.length) {
+    init();
+  }
+}
+
+var flowers = [];
+var assets = ["https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/flowers1.jpg", "https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/flowers2.jpg", "https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/flowers4.jpg", "https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/flowers5.jpg", "https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/flowers6.jpg", "https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/flowers7.jpg"];
+for (var i = 0; i < 6; i++) {
+  flowers.push(new Image());
+  flowers[i].onload = function() {
+    loaderCheck()
+  };
+  flowers[i].src = assets[i];
+}
+
+function reset() {
+  ww = canvas.width = window.innerWidth;
+  wh = canvas.height = window.innerHeight;
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, ww, wh);
+  pearls = [];
+  for (var i = 0; i < amount; i++) {
+    pearls.push(new Pearl());
+  }
+}
+window.addEventListener("resize", reset);
+window.addEventListener("click", reset);
+window.addEventListener("touchend", reset);
+</script>
+
+
+</html>
