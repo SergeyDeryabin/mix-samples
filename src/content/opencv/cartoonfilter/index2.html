@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>title</title>
+</head>
+<body>
+    <div class="btns">    
+        <a href="https://jeanvitor.com/how-to-use-opencv-with-javascript-opencv-js/"> - Исходная статья: Как использовать OpenCV с Javascript (Opencv.js)?(How to use OpenCV with Javascript (Opencv.js))</a>
+    </div>
+
+    <div class="btns">  
+        <a href="http://dsm1955.narod.ru/My_read_books/README_tools.html"> - Список прочитанных(переведенных) книг по библиотеке компьютерного зрения: OpenCV (англ. Open Source Computer Vision Library, библиотека компьютерного зрения с открытым исходным кодом) — библиотека алгоритмов компьютерного зрения, обработки изображений и численных алгоритмов общего назначения с открытым кодом.</a>
+    </div>
+    <div style="border: thin solid black;">
+
+        <center>
+            <h2>Магическая коробка с библиотекой OpenCV.js :)</h2>
+            <p id="status">Статус библиотеки OpenCV.js : Загрузка...</p>
+            
+
+            <div>
+                <div class="row-align">
+                    <img id="imageSrc" style="border: none;" />
+                    <canvas id="canvasOutput" width="300"></canvas>
+                </div>
+    
+                <input type="file" id="fileInput" name="file" />
+            </div>
+        </center>
+    
+        <script type="text/javascript">
+            let imgElement = document.getElementById('imageSrc');
+            let inputElement = document.getElementById('fileInput');
+            inputElement.addEventListener('change', (e) => {
+                imgElement.src = URL.createObjectURL(e.target.files[0]);
+            }, false);
+            imgElement.onload = function () {
+                let mat = cv.imread(imgElement);
+                cv.cvtColor(mat, mat, cv.COLOR_RGB2GRAY, 0);
+                cv.Canny(mat, mat, 50, 100, 3, false);
+                cv.imshow('canvasOutput', mat);
+                mat.delete();
+            };
+            function onOpenCvReady() {
+                document.getElementById('status').innerHTML = 'Статус библиотеки OpenCV.js : Готова.';
+            }
+        </script>
+    
+        <script async src="https://docs.opencv.org/4.5.4/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    </div>
+</body>
+</html>
